@@ -14,7 +14,7 @@ import (
 	"github.com/cgund98/gopi-tools/linear"
 )
 
-const usage = `gopi [flags] [workspace]
+const usage = `egopi [flags] [workspace]
 
 Start the coding agent in a workspace, with the calendar and Linear tools.
 

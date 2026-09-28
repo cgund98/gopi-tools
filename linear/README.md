@@ -38,7 +38,7 @@ updates and archives show a before/after diff.
    default_team = "ENG"
    ```
 
-5. Run `go run ./cmd/gopi`.
+5. Run `go run ./cmd/egopi`.
 
 Linear sends the key as the raw `Authorization` header, without a `Bearer`
 prefix. That is what Linear expects for API keys, and it differs from OAuth
