@@ -12,7 +12,7 @@ import (
 )
 
 func TestHeadlineNamesOperation(t *testing.T) {
-	tool := &CalendarTool{}
+	tool := &Tool{}
 	cases := map[string]string{
 		`{"operation":"list_events","start_time":"2026-09-25T00:00:00Z"}`: "calendar list " + time.Date(2026, 9, 25, 0, 0, 0, 0, time.UTC).Local().Format("2006-01-02"),
 		`{"operation":"list_events"}`:                                     "calendar list",
@@ -29,7 +29,7 @@ func TestHeadlineNamesOperation(t *testing.T) {
 }
 
 func TestRenderApprovalShowsEventFields(t *testing.T) {
-	view := (&CalendarTool{}).RenderApproval(json.RawMessage(`{"operation":"create_event","summary":"Standup","start_time":"2026-09-25T16:00:00Z","end_time":"2026-09-25T16:30:00Z","location":"Room 1"}`))
+	view := (&Tool{}).RenderApproval(json.RawMessage(`{"operation":"create_event","summary":"Standup","start_time":"2026-09-25T16:00:00Z","end_time":"2026-09-25T16:30:00Z","location":"Room 1"}`))
 	labels := fieldLabels(view)
 	if labels != "Summary Start End Location" {
 		t.Fatalf("labels = %q", labels)
@@ -112,7 +112,7 @@ func TestPatchLeavesEmptyFieldsUnset(t *testing.T) {
 }
 
 func TestRenderResultByOperation(t *testing.T) {
-	tool := &CalendarTool{}
+	tool := &Tool{}
 
 	list := tool.RenderResult(nil, json.RawMessage(`{"operation":"list_events","events":[{"id":"1","summary":"Standup","start_time":"2026-09-25T16:00:00Z","end_time":"2026-09-25T16:30:00Z"}]}`))
 	if len(list.Lines) != 1 || !strings.HasSuffix(list.Lines[0], "  Standup") || !strings.Contains(list.Lines[0], "–") {
@@ -145,7 +145,7 @@ func TestParametersOfferEveryOperation(t *testing.T) {
 		} `json:"properties"`
 		Required []string `json:"required"`
 	}
-	if err := json.Unmarshal((&CalendarTool{}).Parameters(), &schema); err != nil {
+	if err := json.Unmarshal((&Tool{}).Parameters(), &schema); err != nil {
 		t.Fatal(err)
 	}
 	operation := schema.Properties["operation"]

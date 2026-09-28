@@ -54,9 +54,9 @@ func (m *mockCalendarClient) deleteEvent(ctx context.Context, calendarID, eventI
 	return errors.New("deleteEvent not implemented")
 }
 
-func newTestTool(client calendarClient) *CalendarTool {
-	t := &CalendarTool{
-		cfg: CalendarConfig{CalendarID: "primary"},
+func newTestTool(client calendarClient) *Tool {
+	t := &Tool{
+		cfg: Config{CalendarID: "primary"},
 	}
 	if client != nil {
 		t.client = client
@@ -64,14 +64,14 @@ func newTestTool(client calendarClient) *CalendarTool {
 	return t
 }
 
-func TestCalendarTool_Name(t *testing.T) {
+func TestTool_Name(t *testing.T) {
 	tool := newTestTool(nil)
 	if got := tool.Name(); got != "google_calendar" {
 		t.Fatalf("Name() = %q, want %q", got, "google_calendar")
 	}
 }
 
-func TestCalendarTool_Parameters(t *testing.T) {
+func TestTool_Parameters(t *testing.T) {
 	tool := newTestTool(nil)
 	params := tool.Parameters()
 	if len(params) == 0 {
@@ -86,7 +86,7 @@ func TestCalendarTool_Parameters(t *testing.T) {
 	}
 }
 
-func TestCalendarTool_RequiresApproval(t *testing.T) {
+func TestTool_RequiresApproval(t *testing.T) {
 	tests := []struct {
 		name         string
 		args         string
@@ -140,9 +140,9 @@ func TestCalendarTool_RequiresApproval(t *testing.T) {
 	}
 }
 
-func TestCalendarTool_Execute_ListEvents(t *testing.T) {
+func TestTool_Execute_ListEvents(t *testing.T) {
 	mock := &mockCalendarClient{
-		listEventsFunc: func(ctx context.Context, calendarID string, minTime, maxTime time.Time, maxResults int64) ([]eventSummary, error) {
+		listEventsFunc: func(_ context.Context, calendarID string, _ time.Time, _ time.Time, _ int64) ([]eventSummary, error) {
 			if calendarID != "primary" {
 				t.Fatalf("calendarID = %q, want primary", calendarID)
 			}
@@ -169,9 +169,9 @@ func TestCalendarTool_Execute_ListEvents(t *testing.T) {
 	}
 }
 
-func TestCalendarTool_Execute_ListEvents_ClientError(t *testing.T) {
+func TestTool_Execute_ListEvents_ClientError(t *testing.T) {
 	mock := &mockCalendarClient{
-		listEventsFunc: func(ctx context.Context, calendarID string, minTime, maxTime time.Time, maxResults int64) ([]eventSummary, error) {
+		listEventsFunc: func(_ context.Context, _ string, _ time.Time, _ time.Time, _ int64) ([]eventSummary, error) {
 			return nil, errors.New("api error")
 		},
 	}
@@ -189,9 +189,9 @@ func TestCalendarTool_Execute_ListEvents_ClientError(t *testing.T) {
 	}
 }
 
-func TestCalendarTool_Execute_CreateEvent(t *testing.T) {
+func TestTool_Execute_CreateEvent(t *testing.T) {
 	mock := &mockCalendarClient{
-		createEventFunc: func(ctx context.Context, calendarID string, evt eventDetail) (*eventDetail, error) {
+		createEventFunc: func(_ context.Context, _ string, evt eventDetail) (*eventDetail, error) {
 			return &eventDetail{ID: "new123", Summary: evt.Summary, StartTime: evt.StartTime, EndTime: evt.EndTime}, nil
 		},
 	}
@@ -214,7 +214,7 @@ func TestCalendarTool_Execute_CreateEvent(t *testing.T) {
 	}
 }
 
-func TestCalendarTool_Execute_CreateEvent_MissingArgs(t *testing.T) {
+func TestTool_Execute_CreateEvent_MissingArgs(t *testing.T) {
 	// Use a mock client so validation runs before client setup is attempted.
 	mock := &mockCalendarClient{}
 	tool := newTestTool(mock)
@@ -231,7 +231,7 @@ func TestCalendarTool_Execute_CreateEvent_MissingArgs(t *testing.T) {
 	}
 }
 
-func TestCalendarTool_Execute_InvalidOperation(t *testing.T) {
+func TestTool_Execute_InvalidOperation(t *testing.T) {
 	tool := newTestTool(nil)
 	result, err := tool.Execute(context.Background(), json.RawMessage(`{"operation":"magic"}`))
 	if err != nil {
@@ -246,9 +246,9 @@ func TestCalendarTool_Execute_InvalidOperation(t *testing.T) {
 	}
 }
 
-func TestCalendarTool_Execute_DeleteEvent(t *testing.T) {
+func TestTool_Execute_DeleteEvent(t *testing.T) {
 	mock := &mockCalendarClient{
-		deleteEventFunc: func(ctx context.Context, calendarID, eventID string) error {
+		deleteEventFunc: func(_ context.Context, _, _ string) error {
 			return nil
 		},
 	}
@@ -269,6 +269,6 @@ func TestCalendarTool_Execute_DeleteEvent(t *testing.T) {
 	}
 }
 
-func TestCalendarTool_Interface(t *testing.T) {
-	var _ gogent.Tool = (*CalendarTool)(nil)
+func TestTool_Interface(_ *testing.T) {
+	var _ gogent.Tool = (*Tool)(nil)
 }

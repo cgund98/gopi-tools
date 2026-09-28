@@ -9,10 +9,10 @@ import (
 	"github.com/cgund98/gopi"
 )
 
-var _ gopi.ToolRenderer = (*CalendarTool)(nil)
+var _ gopi.ToolRenderer = (*Tool)(nil)
 
 // Headline names the operation and its subject on the tool line.
-func (t *CalendarTool) Headline(raw json.RawMessage) string {
+func (t *Tool) Headline(raw json.RawMessage) string {
 	var args calendarArgs
 	if json.Unmarshal(raw, &args) != nil {
 		return ""
@@ -37,7 +37,7 @@ func (t *CalendarTool) Headline(raw json.RawMessage) string {
 }
 
 // RenderApproval shows the event a write will create, change, or delete.
-func (t *CalendarTool) RenderApproval(raw json.RawMessage) gopi.ToolView {
+func (t *Tool) RenderApproval(raw json.RawMessage) gopi.ToolView {
 	var args calendarArgs
 	if json.Unmarshal(raw, &args) != nil {
 		return gopi.ToolView{}
@@ -77,7 +77,7 @@ func (t *CalendarTool) RenderApproval(raw json.RawMessage) gopi.ToolView {
 }
 
 // RenderResult shows events as lines, one event as fields, and a delete as one line.
-func (t *CalendarTool) RenderResult(_, raw json.RawMessage) gopi.ToolView {
+func (t *Tool) RenderResult(_, raw json.RawMessage) gopi.ToolView {
 	var result struct {
 		Operation string         `json:"operation"`
 		Events    []eventSummary `json:"events"`

@@ -83,7 +83,9 @@ func main() {
 
 	// Send a simple response back to the browser.
 	response := "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<h1>Authentication successful!</h1><p>You can close this window.</p>"
-	conn.Write([]byte(response))
+	if _, err := conn.Write([]byte(response)); err != nil {
+		log.Printf("Failed to write callback response: %v", err)
+	}
 	log.Println("Received authorization code")
 
 	// Exchange the authorization code for a token

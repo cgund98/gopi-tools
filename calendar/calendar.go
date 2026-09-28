@@ -24,9 +24,9 @@ type calendarArgs struct {
 	MaxResults  int64  `json:"max_results,omitempty" jsonschema_description:"Maximum number of events to return for list_events. Default 10."`
 }
 
-// CalendarTool implements gogent.Tool for Google Calendar operations.
-type CalendarTool struct {
-	cfg    CalendarConfig
+// Tool implements gogent.Tool for Google Calendar operations.
+type Tool struct {
+	cfg    Config
 	client calendarClient
 
 	mu sync.Mutex
@@ -64,25 +64,25 @@ type eventDetail struct {
 	HTMLLink    string `json:"html_link,omitempty"`
 }
 
-// NewCalendarTool creates a new Google Calendar tool.
+// New creates a new Google Calendar tool.
 // If cfg is incomplete or the client cannot be built, the tool will return
 // errors at execution time rather than failing construction.
-func NewCalendarTool(cfg CalendarConfig) gogent.Tool {
-	return &CalendarTool{cfg: cfg}
+func New(cfg Config) gogent.Tool {
+	return &Tool{cfg: cfg}
 }
 
 // Name returns the tool name.
-func (t *CalendarTool) Name() string { return "google_calendar" }
+func (t *Tool) Name() string { return "google_calendar" }
 
 // Description returns the tool description for the model.
-func (t *CalendarTool) Description() string {
+func (t *Tool) Description() string {
 	return "Interact with Google Calendar. Supports listing events, reading an event, creating, updating, and deleting events. " +
 		"Time values must be in RFC3339 format. Read operations (list_events, get_event) do not require approval. " +
 		"Write operations (create_event, update_event, delete_event) require user approval."
 }
 
 // Parameters returns the JSON Schema for the tool arguments.
-func (t *CalendarTool) Parameters() json.RawMessage {
+func (t *Tool) Parameters() json.RawMessage {
 	reflector := jsonschema.Reflector{DoNotReference: true}
 	body, err := json.Marshal(reflector.Reflect(new(calendarArgs)))
 	if err != nil {
@@ -92,7 +92,7 @@ func (t *CalendarTool) Parameters() json.RawMessage {
 }
 
 // RequiresApproval returns whether the operation needs human approval.
-func (t *CalendarTool) RequiresApproval(ctx context.Context, raw json.RawMessage) (gogent.ApprovalDecision, error) {
+func (t *Tool) RequiresApproval(ctx context.Context, raw json.RawMessage) (gogent.ApprovalDecision, error) {
 	var args calendarArgs
 	if err := json.Unmarshal(raw, &args); err != nil {
 		return gogent.ApprovalDecision{}, fmt.Errorf("parse arguments: %w", err)
@@ -120,7 +120,7 @@ func (t *CalendarTool) RequiresApproval(ctx context.Context, raw json.RawMessage
 
 // lookupCurrent fetches the event an update or delete names. A failed lookup
 // leaves the prompt showing only the event ID and the requested values.
-func (t *CalendarTool) lookupCurrent(ctx context.Context, eventID string) (eventDetail, bool) {
+func (t *Tool) lookupCurrent(ctx context.Context, eventID string) (eventDetail, bool) {
 	if eventID == "" {
 		return eventDetail{}, false
 	}
@@ -141,20 +141,20 @@ func (t *CalendarTool) lookupCurrent(ctx context.Context, eventID string) (event
 	return *event, true
 }
 
-func (t *CalendarTool) currentEvent(eventID string) (eventDetail, bool) {
+func (t *Tool) currentEvent(eventID string) (eventDetail, bool) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	event, ok := t.current[eventID]
 	return event, ok
 }
 
-func (t *CalendarTool) forgetCurrent(eventID string) {
+func (t *Tool) forgetCurrent(eventID string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	delete(t.current, eventID)
 }
 
-func (t *CalendarTool) ensureClient() (calendarClient, error) {
+func (t *Tool) ensureClient() (calendarClient, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	if t.client == nil {
@@ -168,7 +168,7 @@ func (t *CalendarTool) ensureClient() (calendarClient, error) {
 }
 
 // Execute runs the requested calendar operation.
-func (t *CalendarTool) Execute(ctx context.Context, raw json.RawMessage) (json.RawMessage, error) {
+func (t *Tool) Execute(ctx context.Context, raw json.RawMessage) (json.RawMessage, error) {
 	var args calendarArgs
 	if err := json.Unmarshal(raw, &args); err != nil {
 		return nil, fmt.Errorf("parse arguments: %w", err)
@@ -206,7 +206,7 @@ func (t *CalendarTool) Execute(ctx context.Context, raw json.RawMessage) (json.R
 	return nil, nil // unreachable
 }
 
-func (t *CalendarTool) executeListEvents(ctx context.Context, args calendarArgs) (json.RawMessage, error) {
+func (t *Tool) executeListEvents(ctx context.Context, args calendarArgs) (json.RawMessage, error) {
 	var minTime, maxTime time.Time
 	if args.StartTime != "" {
 		var err error
@@ -244,7 +244,7 @@ func (t *CalendarTool) executeListEvents(ctx context.Context, args calendarArgs)
 	})
 }
 
-func (t *CalendarTool) executeGetEvent(ctx context.Context, args calendarArgs) (json.RawMessage, error) {
+func (t *Tool) executeGetEvent(ctx context.Context, args calendarArgs) (json.RawMessage, error) {
 	if args.EventID == "" {
 		return json.Marshal(map[string]any{
 			"error":   "missing_argument",
@@ -264,7 +264,7 @@ func (t *CalendarTool) executeGetEvent(ctx context.Context, args calendarArgs) (
 	})
 }
 
-func (t *CalendarTool) executeCreateEvent(ctx context.Context, args calendarArgs) (json.RawMessage, error) {
+func (t *Tool) executeCreateEvent(ctx context.Context, args calendarArgs) (json.RawMessage, error) {
 	if args.Summary == "" || args.StartTime == "" || args.EndTime == "" {
 		return json.Marshal(map[string]any{
 			"error":   "missing_argument",
@@ -291,7 +291,7 @@ func (t *CalendarTool) executeCreateEvent(ctx context.Context, args calendarArgs
 	})
 }
 
-func (t *CalendarTool) executeUpdateEvent(ctx context.Context, args calendarArgs) (json.RawMessage, error) {
+func (t *Tool) executeUpdateEvent(ctx context.Context, args calendarArgs) (json.RawMessage, error) {
 	if args.EventID == "" {
 		return json.Marshal(map[string]any{
 			"error":   "missing_argument",
@@ -323,7 +323,7 @@ func (t *CalendarTool) executeUpdateEvent(ctx context.Context, args calendarArgs
 	})
 }
 
-func (t *CalendarTool) executeDeleteEvent(ctx context.Context, args calendarArgs) (json.RawMessage, error) {
+func (t *Tool) executeDeleteEvent(ctx context.Context, args calendarArgs) (json.RawMessage, error) {
 	if args.EventID == "" {
 		return json.Marshal(map[string]any{
 			"error":   "missing_argument",
