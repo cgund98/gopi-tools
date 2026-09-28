@@ -17,44 +17,51 @@ type googleCalendarClient struct {
 	srv *calendar.Service
 }
 
-// newGoogleClient builds a Google Calendar client using OAuth2 with auto-refresh.
-// It loads the stored token (which includes a refresh_token) and uses an
-// oauth2.TokenSource to automatically obtain new access tokens when they expire.
-func newGoogleClient(cfg CalendarConfig) (*googleCalendarClient, error) {
-	if len(cfg.CredentialsJSON) == 0 && (len(cfg.ClientID) == 0 || len(cfg.ClientSecret) == 0) {
-		return nil, fmt.Errorf("Either CredentialsJSON or both ClientID and ClientSecret must be provided")
-	}
+// newGoogleClient builds a Google Calendar client from the stored OAuth token.
+// When OAuth client credentials are set it refreshes expired access tokens;
+// otherwise it uses the token's bearer token as-is.
+func newGoogleClient(cfg Config) (*googleCalendarClient, error) {
 	if len(cfg.TokenJSON) == 0 {
 		return nil, fmt.Errorf("TokenJSON is required; run 'go run ./cmd/gcal-auth' to generate it")
+	}
+	if len(cfg.CredentialsJSON) == 0 && (cfg.ClientID == "") != (cfg.ClientSecret == "") {
+		return nil, fmt.Errorf("ClientID and ClientSecret must be provided together")
 	}
 
 	ctx := context.Background()
 
-	// Build OAuth2 config from credentials JSON or explicit ClientID/ClientSecret.
-	var oauthCfg *oauth2.Config
-	if len(cfg.CredentialsJSON) > 0 {
-		var err error
-		oauthCfg, err = google.ConfigFromJSON(cfg.CredentialsJSON, calendar.CalendarScope)
-		if err != nil {
-			return nil, fmt.Errorf("parse credentials JSON: %w", err)
-		}
-	} else {
-		oauthCfg = &oauth2.Config{
-			ClientID:     cfg.ClientID,
-			ClientSecret: cfg.ClientSecret,
-			Scopes:       []string{calendar.CalendarScope},
-			Endpoint:     google.Endpoint,
-		}
-	}
-
-	// Load the stored token (contains refresh_token).
+	// Load the stored token. It carries the bearer token and, for a token that
+	// can be refreshed, a refresh_token.
 	var token oauth2.Token
 	if err := json.Unmarshal(cfg.TokenJSON, &token); err != nil {
 		return nil, fmt.Errorf("parse token JSON: %w", err)
 	}
 
-	// Create a token source that auto-refreshes using the refresh_token.
-	ts := oauthCfg.TokenSource(ctx, &token)
+	// Build a token source. Credentials from JSON or explicit ClientID and
+	// ClientSecret give auto-refresh; without them the token is used as-is.
+	var ts oauth2.TokenSource
+	switch {
+	case len(cfg.CredentialsJSON) > 0:
+		oauthCfg, err := google.ConfigFromJSON(cfg.CredentialsJSON, calendar.CalendarScope)
+		if err != nil {
+			return nil, fmt.Errorf("parse credentials JSON: %w", err)
+		}
+		ts = oauthCfg.TokenSource(ctx, &token)
+	case cfg.ClientID != "":
+		oauthCfg := &oauth2.Config{
+			ClientID:     cfg.ClientID,
+			ClientSecret: cfg.ClientSecret,
+			Scopes:       []string{calendar.CalendarScope},
+			Endpoint:     google.Endpoint,
+		}
+		ts = oauthCfg.TokenSource(ctx, &token)
+	default:
+		if !token.Valid() {
+			return nil, fmt.Errorf("stored token is expired and no OAuth client is configured; run 'go run ./cmd/gcal-auth' to refresh it")
+		}
+		ts = oauth2.StaticTokenSource(&token)
+	}
+
 	client := oauth2.NewClient(ctx, ts)
 
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
