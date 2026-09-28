@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/cgund98/gopi-tools/compare/v0.1.0...v0.1.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* support installation with go install ([a89fb6e](https://github.com/cgund98/gopi-tools/commit/a89fb6e1e04089a9b79e59f84ee9ce665a08936e))
+* support installation with go install ([c69bd09](https://github.com/cgund98/gopi-tools/commit/c69bd097c80cb001bf72d88579b9c23e13cf6751))
+
 ## [0.1.0](https://github.com/cgund98/gopi-tools/compare/v0.0.1...v0.1.0) (2026-09-28)
 
 
