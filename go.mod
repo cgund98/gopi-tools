@@ -3,8 +3,8 @@ module github.com/cgund98/gopi-tools
 go 1.26.0
 
 require (
-	github.com/cgund98/gogent v0.4.1
-	github.com/cgund98/gopi v0.5.1
+	github.com/cgund98/gogent v0.5.0
+	github.com/cgund98/gopi v0.6.0
 	github.com/invopop/jsonschema v0.14.0
 	golang.org/x/oauth2 v0.37.0
 	google.golang.org/api v0.299.0
@@ -16,6 +16,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.9.1 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/alecthomas/chroma/v2 v2.20.0 // indirect
+	github.com/anthropics/anthropic-sdk-go v1.76.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
@@ -56,7 +57,8 @@ require (
 	github.com/pb33f/ordered-map/v2 v2.3.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sahilm/fuzzy v0.1.1 // indirect
-	github.com/tidwall/gjson v1.14.4 // indirect
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.1 // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
