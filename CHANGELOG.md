@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/cgund98/gopi-tools/compare/v0.1.1...v0.1.2) (2026-09-29)
+
+
+### Bug Fixes
+
+* upgrade gopi to v0.5.1 ([5de3ad3](https://github.com/cgund98/gopi-tools/commit/5de3ad327288a7a8850e471177e5606cd26ee091))
+* upgrade gopi to v0.5.1 ([2b0c25e](https://github.com/cgund98/gopi-tools/commit/2b0c25ee81b9e26b5f308aa86bef5b7cf2c3c493))
+
 ## [0.1.1](https://github.com/cgund98/gopi-tools/compare/v0.1.0...v0.1.1) (2026-09-28)
 
 
