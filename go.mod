@@ -3,8 +3,8 @@ module github.com/cgund98/gopi-tools
 go 1.26.0
 
 require (
-	github.com/cgund98/gogent v0.5.0
-	github.com/cgund98/gopi v0.6.0
+	github.com/cgund98/gogent v0.6.0
+	github.com/cgund98/gopi v0.7.0
 	github.com/invopop/jsonschema v0.14.0
 	golang.org/x/oauth2 v0.37.0
 	google.golang.org/api v0.299.0
